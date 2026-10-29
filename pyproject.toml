@@ -1,0 +1,32 @@
+[project]
+name = "social-mcp"
+version = "0.1.0"
+description = "Open-source MCP server for Google Ads, Google Analytics 4 and Meta Ads, by Discret Digital"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Discret Digital" }]
+requires-python = ">=3.11"
+dependencies = [
+    "mcp[cli]>=2.3,<3",
+    "google-ads>=34",
+    "google-analytics-data>=0.23",
+    "google-analytics-admin>=0.30",
+    "google-auth-oauthlib>=1.2",
+    "httpx>=0.28",
+    "python-dotenv>=1.0",
+    "uvicorn>=0.30",
+]
+
+[project.urls]
+Homepage = "https://www.discretdigital.com"
+Repository = "https://github.com/abdulhadi-98/Social-Mcp"
+
+[project.scripts]
+social-mcp = "ads_mcp.server:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["ads_mcp"]

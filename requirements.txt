@@ -1,0 +1,8 @@
+mcp[cli]>=2.3,<3
+google-ads>=34
+google-analytics-data>=0.23
+google-analytics-admin>=0.30
+google-auth-oauthlib>=1.2
+httpx>=0.28
+python-dotenv>=1.0
+uvicorn>=0.30
