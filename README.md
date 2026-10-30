@@ -110,6 +110,7 @@ All settings come from environment variables or a `.env` file in the project roo
 | `GOOGLE_ADS_DEVELOPER_TOKEN` | Google Ads | Developer token from the API Center |
 | `GOOGLE_ADS_LOGIN_CUSTOMER_ID` | Optional | MCC ID (digits only) when you access accounts through a manager |
 | `META_ACCESS_TOKEN` | Meta | System user access token |
+| `META_ADLIB_TOKEN` | Meta | Optional token for `meta_search_ad_library`; falls back to `META_ACCESS_TOKEN` |
 | `META_API_VERSION` | Optional | Graph API version (default `v24.0`) |
 | `ALLOW_WRITES` | Optional | `true` to allow confirmed changes (default `false`) |
 | `MAX_DAILY_BUDGET` | Optional | Maximum daily budget an agent can set (default `500`) |
@@ -228,6 +229,7 @@ social-mcp --transport http
 | `meta_list_ad_accounts` | Read | All accessible ad accounts |
 | `meta_list_entities` | Read | Campaigns, ad sets or ads, with status and budgets |
 | `meta_get_insights` | Read | Performance with breakdowns and daily rows |
+| `meta_search_ad_library` | Read | Search the public Meta Ad Library for any advertiser's ads (competitor research) |
 | `meta_set_status` | Write | Pause or activate a campaign, ad set or ad |
 | `meta_set_budget` | Write | Change a daily or lifetime budget (handles currency units) |
 | `meta_update_entity` | Write | Update safe fields (name, bid, schedule, spend cap) |

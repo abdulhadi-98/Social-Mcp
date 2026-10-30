@@ -29,6 +29,7 @@ class Settings:
 
     # Meta
     meta_access_token: str = os.getenv("META_ACCESS_TOKEN", "")
+    meta_adlib_token: str = os.getenv("META_ADLIB_TOKEN", "")
     meta_api_version: str = os.getenv("META_API_VERSION", "v24.0")
 
     # Safety

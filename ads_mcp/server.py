@@ -54,6 +54,7 @@ TOOLS = [
     ("meta_list_ad_accounts", meta_ads.list_ad_accounts, READ),
     ("meta_list_entities", meta_ads.list_entities, READ),
     ("meta_get_insights", meta_ads.get_insights, READ),
+    ("meta_search_ad_library", meta_ads.search_ad_library, READ),
     ("meta_set_status", meta_ads.set_status, WRITE),
     ("meta_set_budget", meta_ads.set_budget, WRITE),
     ("meta_update_entity", meta_ads.update_entity, WRITE),

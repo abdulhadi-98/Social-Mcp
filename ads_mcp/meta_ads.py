@@ -1,5 +1,6 @@
 """Meta (Facebook / Instagram) Ads tools via the Marketing API (Graph API)."""
 
+import json
 from typing import Any, Literal
 
 import httpx
@@ -18,10 +19,11 @@ def _base() -> str:
     return f"https://graph.facebook.com/{settings.meta_api_version}"
 
 
-def _request(method: str, path: str, params: dict | None = None, data: dict | None = None) -> dict[str, Any]:
-    if not settings.meta_access_token:
+def _request(method: str, path: str, params: dict | None = None, data: dict | None = None, token: str = "") -> dict[str, Any]:
+    token = token or settings.meta_access_token
+    if not token:
         raise RuntimeError("Meta is not configured: set META_ACCESS_TOKEN.")
-    params = {**(params or {}), "access_token": settings.meta_access_token}
+    params = {**(params or {}), "access_token": token}
     resp = httpx.request(method, f"{_base()}/{path.lstrip('/')}", params=params, data=data, timeout=60)
     body = resp.json()
     if "error" in body:
@@ -31,9 +33,9 @@ def _request(method: str, path: str, params: dict | None = None, data: dict | No
     return body
 
 
-def _get_all(path: str, params: dict, limit: int) -> list[dict] | dict:
+def _get_all(path: str, params: dict, limit: int, token: str = "") -> list[dict] | dict:
     items: list[dict] = []
-    body = _request("GET", path, {**params, "limit": min(limit, 500)})
+    body = _request("GET", path, {**params, "limit": min(limit, 500)}, token=token)
     while True:
         if "error" in body:
             return body
@@ -121,6 +123,52 @@ def get_insights(
         params["time_increment"] = time_increment
     res = _get_all(f"{object_id}/insights", params, limit)
     return res if isinstance(res, dict) else {"rows": res}
+
+
+def search_ad_library(
+    countries: list[str],
+    search_terms: str = "",
+    page_ids: list[str] | None = None,
+    active_status: Literal["ACTIVE", "INACTIVE", "ALL"] = "ACTIVE",
+    ad_type: Literal["ALL", "POLITICAL_AND_ISSUE_ADS", "HOUSING_ADS", "EMPLOYMENT_ADS", "FINANCIAL_PRODUCTS_AND_SERVICES_ADS"] = "ALL",
+    platforms: list[str] | None = None,
+    delivery_date_min: str = "",
+    delivery_date_max: str = "",
+    fields: list[str] | None = None,
+    limit: int = 50,
+) -> dict[str, Any]:
+    """Search the public Meta Ad Library for ads from any advertiser (competitor research).
+
+    countries: ISO codes the ads reached, e.g. ["US","PK"] (use ["ALL"] for every country).
+    Give search_terms (keywords) and/or page_ids (Facebook Page IDs of the advertisers).
+    platforms e.g. ["FACEBOOK","INSTAGRAM"]. Dates are YYYY-MM-DD. Each ad includes ad_snapshot_url to view the creative.
+    Spend, impressions and demographics are only returned by Meta for political/issue ads and ads shown in the EU/UK.
+    Needs a token whose user has completed Meta's Ad Library API authorisation (META_ADLIB_TOKEN, falling back to META_ACCESS_TOKEN).
+    """
+    if not search_terms and not page_ids:
+        raise ValueError("Provide search_terms and/or page_ids.")
+    params: dict[str, Any] = {
+        "ad_reached_countries": json.dumps([c.upper() for c in countries]),
+        "ad_active_status": active_status,
+        "ad_type": ad_type,
+        "fields": ",".join(fields or [
+            "id", "page_id", "page_name", "ad_creation_time", "ad_delivery_start_time", "ad_delivery_stop_time",
+            "ad_creative_bodies", "ad_creative_link_titles", "ad_creative_link_descriptions", "ad_creative_link_captions",
+            "publisher_platforms", "languages", "ad_snapshot_url", "bylines",
+        ]),
+    }
+    if search_terms:
+        params["search_terms"] = search_terms
+    if page_ids:
+        params["search_page_ids"] = ",".join(page_ids)
+    if platforms:
+        params["publisher_platforms"] = json.dumps([p.upper() for p in platforms])
+    if delivery_date_min:
+        params["ad_delivery_date_min"] = delivery_date_min
+    if delivery_date_max:
+        params["ad_delivery_date_max"] = delivery_date_max
+    res = _get_all("ads_archive", params, limit, token=settings.meta_adlib_token)
+    return res if isinstance(res, dict) else {"ads": res}
 
 
 def set_status(object_id: str, status: Literal["ACTIVE", "PAUSED"], confirm: bool = False) -> dict[str, Any]:
