@@ -1,6 +1,7 @@
 """Meta (Facebook / Instagram) Ads tools via the Marketing API (Graph API)."""
 
 import json
+import re
 from typing import Any, Literal
 
 import httpx
@@ -168,7 +169,12 @@ def search_ad_library(
     if delivery_date_max:
         params["ad_delivery_date_max"] = delivery_date_max
     res = _get_all("ads_archive", params, limit, token=settings.meta_adlib_token)
-    return res if isinstance(res, dict) else {"ads": res}
+    if isinstance(res, dict):
+        return res
+    for ad in res:  # Meta embeds the access token in snapshot URLs; never hand it to the client.
+        if ad.get("ad_snapshot_url"):
+            ad["ad_snapshot_url"] = re.sub(r"[&?]access_token=[^&]*", "", ad["ad_snapshot_url"])
+    return {"ads": res}
 
 
 def set_status(object_id: str, status: Literal["ACTIVE", "PAUSED"], confirm: bool = False) -> dict[str, Any]:
